@@ -1,0 +1,16 @@
+.styleNotActive {
+    -fx-text-fill: gray;
+}
+.styleImportant {
+    -fx-font-weight:bold;
+}
+.styleOwnPlayer {
+      -fx-background-color: #EEE8AA	;
+      -fx-accent: derive(-fx-control-inner-background, -40%);
+      -fx-cell-hover-color: derive(-fx-control-inner-background, -20%);
+}
+.styleOwnPlayer:focused:selected, .styleOwnPlayer:focused:selected, .styleOwnPlayer:focused:selected {
+    -fx-background-color: #FFD700	;
+    -fx-background: -fx-accent;
+    -fx-text-fill: -fx-selection-bar-text;
+}
