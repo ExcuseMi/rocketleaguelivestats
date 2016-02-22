@@ -1,6 +1,6 @@
 # rocketleaguelivestats
 
-This awesome sauce tool allows you to checkout the ranked points of your opponent while you play!
+This awesome sauce tool allows you to checkout the ranks of your opponents while you play!
 
 This is how it looks like: 
 
