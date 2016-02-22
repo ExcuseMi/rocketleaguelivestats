@@ -32,16 +32,20 @@ public class TailingFileScanner {
     public class MyTailerListener extends TailerListenerAdapter {
         private GameData gameData = null;
         private OwnPlayer ownPlayer;
+        private GameData recentValidData = null;
 
         @Override
         public void fileRotated() {
-            gameData =null;
-            gameDataListener.gameDataChanged(gameData);
+            if(recentValidData != null && !recentValidData.isEmpty()) {
+                gameDataListener.gameDataChanged(recentValidData);
+            }
         }
 
         @Override
         public void endOfFile() {
-            gameDataListener.gameDataChanged(gameData);
+            if(recentValidData != null && !recentValidData.isEmpty()) {
+                gameDataListener.gameDataChanged(recentValidData);
+            }
         }
 
         public void handle(String line) {
@@ -55,6 +59,9 @@ public class TailingFileScanner {
             if(newGameData != null) {
                 gameData = newGameData;
                 gameData.setOwnPlayer(ownPlayer);
+                if(!gameData.isEmpty()) {
+                    recentValidData = gameData;
+                }
             }
 
         }

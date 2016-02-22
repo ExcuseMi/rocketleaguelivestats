@@ -40,8 +40,12 @@ public class GameViewModel {
         this.game = latestGame;
         Platform.runLater(new Runnable() {
             public void run() {
-                setLabelProperty(game != null && game.getPlaylist() != null ? game.getPlaylist().getPlaylistDescription() + " on " + game.getMap() +
-                        (game.getPlaylist().getPlaylistType().isRanked() ? " [RANKED]" : " [UNRANKED]") :  "No games in the log");
+                if(game != null && game.getMap() != null && game.getPlaylist() != null) {
+                    setLabelProperty(game.getPlaylist().getPlaylistDescription() + " on " + game.getMap() +
+                            (game.getPlaylist().getPlaylistType().isRanked() ? " [RANKED]" : " [UNRANKED]"));
+                } else {
+                    setLabelProperty("No games in the log");
+                }
             }
         });
     }
