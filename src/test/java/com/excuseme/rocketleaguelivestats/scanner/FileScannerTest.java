@@ -32,4 +32,15 @@ public class FileScannerTest {
 
     }
 
+    @Test
+    public void test112() {
+        URL url = Thread.currentThread().getContextClassLoader().getResource("Launch-1.12.log");
+        File file = new File(url.getPath());
+        FileScanner fileScanner = new FileScanner(file);
+        List<GameData> gameDatas = fileScanner.scan();
+
+        assertNotNull(gameDatas);
+
+    }
+
 }

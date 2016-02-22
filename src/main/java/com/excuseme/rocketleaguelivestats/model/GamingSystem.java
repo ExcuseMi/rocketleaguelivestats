@@ -1,7 +1,7 @@
 package com.excuseme.rocketleaguelivestats.model;
 
 public enum GamingSystem {
-    STEAM("steam"), PS4("psn"), BOT("other");
+    STEAM("steam"), PS4("ps4"), BOT("other");
 
     private String qualifier;
 

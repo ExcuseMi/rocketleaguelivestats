@@ -12,7 +12,7 @@ public class CachedStatisticsRepository {
     private Map<GamePlayerIdentifier, Statistics> gamePlayerIdentifierStatisticsMap = new HashMap<GamePlayerIdentifier, Statistics>();
 
     public CachedStatisticsRepository() {
-        statisticsRepository = new StatisticsRepository();
+        statisticsRepository = new StatisticsRepository(new RankParser());
     }
 
     public Statistics find(String gameIdentifier, PlayerIdentifier playerIdentifier)  {

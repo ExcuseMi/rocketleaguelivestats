@@ -1,6 +1,9 @@
 package com.excuseme.rocketleaguelivestats.repository;
 
+import com.excuseme.rocketleaguelivestats.model.Rank;
+import com.excuseme.rocketleaguelivestats.model.Tier;
 import com.excuseme.rocketleaguelivestats.model.Statistics;
+import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -11,39 +14,43 @@ import java.io.IOException;
 public class StatisticsRepository {
 
     private static final String AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36";
+    private RankParser rankParser;
+    private final static Logger LOGGER = Logger.getLogger(StatisticsRepository.class);
+    public StatisticsRepository(RankParser rankParser) {
+        this.rankParser = rankParser;
+    }
 
     public Statistics find(String playerId, String system)  {
         Document doc;
         Statistics statistics = null;
 
         try {
-            doc = Jsoup.connect(createURL( playerId , system))
+            final String url = createURL(playerId, system);
+            doc = Jsoup.connect(url)
                     .userAgent(AGENT)
                     .timeout(100*1000).get();
-            Elements select = doc.select("div:contains(Ranked)");
-            Element last = select.last();
-            Elements select1 = last.parent().select("table").first().select("td");
+            LOGGER.info("Querying " + url);
+            final Element season2 = doc.select("div#season_2").last();
+            final Rank duel = rankParser.parseRanked(findRank(season2, "Solo Duel"));
+            final Rank doubles = rankParser.parseRanked(findRank(season2, "Doubles"));
+            final Rank soloStandard = rankParser.parseRanked(findRank(season2, "Solo Standard"));
+            final Rank standard = rankParser.parseRanked(findRank(season2, "Standard"));
+
             statistics = new Statistics();
-            for(int i = 0; i< select1.size(); i+=2) {
-                Element element = select1.get(i);
-                String text = element.text();
-                if("1v1".equalsIgnoreCase(text)) {
-                    statistics.setOneVsOne(Integer.parseInt(select1.get(i+1).text()));
-                }
-                if("2v2".equalsIgnoreCase(text)) {
-                    statistics.setTwoVsTwo(Integer.parseInt(select1.get(i+1).text()));
-                }
-                if("3v3 Solo".equalsIgnoreCase(text)) {
-                    statistics.setThreeVSThreeSolo(Integer.parseInt(select1.get(i+1).text()));
-                }
-                if("3v3".equalsIgnoreCase(text)) {
-                    statistics.setThreeVsThree(Integer.parseInt(select1.get(i+1).text()));
-                }
-            }
+            statistics.setOneVsOne(duel);
+            statistics.setTwoVsTwo(doubles);
+            statistics.setThreeVSThreeSolo(soloStandard);
+            statistics.setThreeVsThree(standard);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return statistics;
+    }
+
+    private String findRank(Element season2, String division) {
+        Elements select = season2.select("div:contains("+ division +")");
+        Element last = select.last();
+        return last.parent().select("p").first().firstElementSibling().text();
     }
 
     public static String createURL(String playerId, String system) {

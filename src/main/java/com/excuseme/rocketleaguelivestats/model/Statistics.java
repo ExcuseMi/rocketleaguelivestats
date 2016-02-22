@@ -1,40 +1,40 @@
 package com.excuseme.rocketleaguelivestats.model;
 
 public class Statistics {
-    private Integer oneVsOne;
-    private Integer twoVsTwo;
-    private Integer ThreeVSThreeSolo;
-    private Integer ThreeVsThree;
+    private Rank oneVsOne;
+    private Rank twoVsTwo;
+    private Rank ThreeVSThreeSolo;
+    private Rank ThreeVsThree;
 
-    public Integer getOneVsOne() {
+    public Rank getOneVsOne() {
         return oneVsOne;
     }
 
-    public Integer getTwoVsTwo() {
-        return twoVsTwo;
-    }
-
-    public Integer getThreeVSThreeSolo() {
-        return ThreeVSThreeSolo;
-    }
-
-    public Integer getThreeVsThree() {
-        return ThreeVsThree;
-    }
-
-    public void setOneVsOne(Integer oneVsOne) {
+    public void setOneVsOne(Rank oneVsOne) {
         this.oneVsOne = oneVsOne;
     }
 
-    public void setTwoVsTwo(Integer twoVsTwo) {
+    public Rank getTwoVsTwo() {
+        return twoVsTwo;
+    }
+
+    public void setTwoVsTwo(Rank twoVsTwo) {
         this.twoVsTwo = twoVsTwo;
     }
 
-    public void setThreeVSThreeSolo(Integer threeVSThreeSolo) {
+    public Rank getThreeVSThreeSolo() {
+        return ThreeVSThreeSolo;
+    }
+
+    public void setThreeVSThreeSolo(Rank threeVSThreeSolo) {
         ThreeVSThreeSolo = threeVSThreeSolo;
     }
 
-    public void setThreeVsThree(Integer threeVsThree) {
+    public Rank getThreeVsThree() {
+        return ThreeVsThree;
+    }
+
+    public void setThreeVsThree(Rank threeVsThree) {
         ThreeVsThree = threeVsThree;
     }
 
@@ -48,7 +48,4 @@ public class Statistics {
                 '}';
     }
 
-    public Integer getAverage() {
-        return(int) Math.floor((oneVsOne + twoVsTwo + ThreeVSThreeSolo + ThreeVsThree) /4) ;
-    }
 }

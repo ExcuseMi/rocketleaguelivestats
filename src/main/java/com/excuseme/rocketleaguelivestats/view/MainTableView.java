@@ -1,13 +1,9 @@
 package com.excuseme.rocketleaguelivestats.view;
 
-import com.excuseme.rocketleaguelivestats.model.Game;
-import com.excuseme.rocketleaguelivestats.model.GamingSystem;
-import com.excuseme.rocketleaguelivestats.model.PlayerIdentifier;
-import com.excuseme.rocketleaguelivestats.model.Statistics;
-import com.excuseme.rocketleaguelivestats.repository.CachedStatisticsRepository;
-import com.excuseme.rocketleaguelivestats.repository.GameRepository;
-import com.excuseme.rocketleaguelivestats.repository.NoLogException;
-import com.excuseme.rocketleaguelivestats.repository.StatisticsRepository;
+import com.excuseme.rocketleaguelivestats.model.*;
+import com.excuseme.rocketleaguelivestats.repository.*;
+import com.excuseme.rocketleaguelivestats.scanner.TailingFileScanner;
+import com.excuseme.rocketleaguelivestats.scanner.model.GameData;
 import com.excuseme.rocketleaguelivestats.view.model.GameViewModel;
 import com.excuseme.rocketleaguelivestats.view.model.PlayerViewModel;
 import com.excuseme.rocketleaguelivestats.view.model.mapper.PlayerViewModelMapper;
@@ -26,8 +22,8 @@ import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -36,21 +32,42 @@ import javafx.stage.StageStyle;
 import javafx.util.Callback;
 import org.apache.log4j.Logger;
 
+import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
+import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
-public class MainTableView extends Application {
+public class MainTableView extends Application implements GameDataListener{
+    private static final String FOLDER = FileSystemView.getFileSystemView().getDefaultDirectory().getPath() + File.separator + "my games" + File.separator + "Rocket League" + File.separator + "TAGame" + File.separator + "Logs" + File.separator;
+    private static final String LAUNCH = "Launch.log";
+
     private static final Logger LOG = Logger.getLogger(MainTableView.class);
     public static final String ROW_TABLE_CSS = "row-table.css";
     public static final String STYLE_OWN_PLAYER = "styleOwnPlayer";
+    public static final Comparator<Rank> RANK_COMPARATOR = new Comparator<Rank>() {
+        @Override
+        public int compare(Rank o1, Rank o2) {
+            if (o1 == null) {
+                return -1;
+            }
+            if (o2 == null) {
+                return +1;
+            }
+            if (!Objects.equals(o1.getTier().getTier(), o2.getTier().getTier())) {
+                return Integer.compare(o1.getTier().getTier(), o2.getTier().getTier());
+            } else {
+                return Integer.compare(o1.getRating() != null ? o1.getRating() : -1, o2.getRating() != null ? o2.getRating() : -1);
+            }
+        }
+    };
+    public static final double RANK_COLUMN_WIDTH = 140d;
     private final GameViewModel gameViewModel;
     private javafx.scene.control.TableView table = new javafx.scene.control.TableView();
     private ScheduledExecutorService executor;
@@ -80,7 +97,7 @@ public class MainTableView extends Application {
         stage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream("rlicon.png")));
 
         stage.setTitle("Rocket league Live Stats");
-        stage.setWidth(730);
+        stage.setWidth(870);
         stage.setResizable(false);
 
         stage.setOnCloseRequest(new EventHandler() {
@@ -127,12 +144,12 @@ public class MainTableView extends Application {
                 };
             }
         };
-        final Callback<TableColumn<PlayerViewModel, Integer>, TableCell<PlayerViewModel, Integer>> styleNotActiveInteger = new Callback<TableColumn<PlayerViewModel, Integer>, TableCell<PlayerViewModel, Integer>>() {
-            public TableCell<PlayerViewModel, Integer> call(TableColumn<PlayerViewModel, Integer> tableColumn) {
-                return new TableCell<PlayerViewModel, Integer>() {
+        final Callback<TableColumn<PlayerViewModel, Rank>, TableCell<PlayerViewModel, Rank>> styleNotActiveInteger = new Callback<TableColumn<PlayerViewModel, Rank>, TableCell<PlayerViewModel, Rank>>() {
+            public TableCell<PlayerViewModel, Rank> call(TableColumn<PlayerViewModel, Rank> tableColumn) {
+                return new TableCell<PlayerViewModel, Rank>() {
 
-                    protected void updateItem(Integer example, boolean empty) {
-                        super.updateItem(example, empty);
+                    protected void updateItem(Rank rank, boolean empty) {
+                        super.updateItem(rank, empty);
                         // Reset column styles
                         if (getStyleClass() != null) {
                             String[] possibleStyles = new String[]{"styleNotActive"};
@@ -152,7 +169,18 @@ public class MainTableView extends Application {
 
                             }
                         }
-                        setText(example != null ? String.valueOf(example) : "");
+                        String value = rank != null ? String.valueOf(rank.getTier().getText()) : "";
+                        value += rank != null && rank.getRating() != null ? "\n(Rating " + rank.getRating() + ")" : "";
+                        setText(value);
+                        if(rank != null && rank.getTier() != null) {
+                            final InputStream resourceAsStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ranks/" + rank.getTier().getTier() + ".png");
+                            final Image image = new Image(resourceAsStream,30d,30d, true, true);
+
+                            setGraphic(new ImageView(image));
+                        } else {
+                            setGraphic(null);
+                        }
+
                     }
                 };
             }
@@ -165,11 +193,11 @@ public class MainTableView extends Application {
 
 //        systemCol.setCellFactory(callback);
         TableColumn nameCol = new TableColumn("Name");
-        nameCol.setMinWidth(300);
+        nameCol.setMinWidth(200);
         nameCol.setCellValueFactory(
                 new PropertyValueFactory<PlayerViewModel, String>("name"));
         nameCol.setCellFactory(styleNotActive);
-        table.setPrefHeight(250);
+        table.setPrefHeight(400);
         table.setRowFactory(new Callback<TableView<PlayerViewModel>, TableRow<PlayerViewModel>>() {
             public TableRow<PlayerViewModel> call(TableView<PlayerViewModel> tableView) {
                 final TableRow<PlayerViewModel> row = new TableRow<PlayerViewModel>() {
@@ -184,6 +212,7 @@ public class MainTableView extends Application {
                         } else {
                             getStyleClass().removeAll(Collections.singleton("styleOwnPlayer"));
                         }
+                        setPrefHeight(40d);
                     }
                 };
                 row.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -208,33 +237,32 @@ public class MainTableView extends Application {
         TableColumn oneVsOneCol = new TableColumn("Duel");
         oneVsOneCol.setCellValueFactory(
                 new PropertyValueFactory<PlayerViewModel, String>("oneVsOne"));
+        oneVsOneCol.setComparator(RANK_COMPARATOR);
         oneVsOneCol.setCellFactory(styleNotActiveInteger);
-
+        oneVsOneCol.setMinWidth(RANK_COLUMN_WIDTH);
         TableColumn twoVSTwoCol = new TableColumn("Doubles");
         twoVSTwoCol.setCellValueFactory(
                 new PropertyValueFactory<PlayerViewModel, String>("twoVsTwo"));
         twoVSTwoCol.setCellFactory(styleNotActiveInteger);
+        twoVSTwoCol.setComparator(RANK_COMPARATOR);
+        twoVSTwoCol.setMinWidth(RANK_COLUMN_WIDTH);
 
         TableColumn threeVSThreeSoloCol = new TableColumn("Solo Standard");
         threeVSThreeSoloCol.setCellValueFactory(
                 new PropertyValueFactory<PlayerViewModel, String>("threeVsThreeSolo"));
         threeVSThreeSoloCol.setCellFactory(styleNotActiveInteger);
+        threeVSThreeSoloCol.setComparator(RANK_COMPARATOR);
+        threeVSThreeSoloCol.setMinWidth(RANK_COLUMN_WIDTH);
 
         TableColumn threeVSThreeStandardCol = new TableColumn("Standard");
         threeVSThreeStandardCol.setCellValueFactory(
                 new PropertyValueFactory<PlayerViewModel, String>("threeVsThreeStandard"));
         threeVSThreeStandardCol.setCellFactory(styleNotActiveInteger);
+        threeVSThreeStandardCol.setComparator(RANK_COMPARATOR);
+        threeVSThreeStandardCol.setMinWidth(RANK_COLUMN_WIDTH);
 
         table.getColumns().addAll(systemCol, nameCol, oneVsOneCol, twoVSTwoCol, threeVSThreeSoloCol, threeVSThreeStandardCol);
-//        averageCol.setSortType(TableColumn.SortType.DESCENDING);
 
-        final Button button = new Button("Refresh");
-        button.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                executor.submit(reload);
-            }
-        });
         final VBox vbox = new VBox();
         vbox.setSpacing(10);
         vbox.setPadding(new Insets(0, 10, 0, 10));
@@ -264,36 +292,17 @@ public class MainTableView extends Application {
                 }
             }
         });
-
-        executor.scheduleAtFixedRate(reload, 0, 20, TimeUnit.SECONDS);
-
+        final TailingFileScanner tailingFileScanner = new TailingFileScanner(this, new File(FOLDER + LAUNCH));
     }
 
-    private void reloadData() {
+    private void reloadData(Game game) {
         LOG.info("Reloading data....");
-        GameRepository gameRepository = GameRepository.createDefault();
-        Game latestGame = null;
-        try {
-            latestGame = gameRepository.findLatestGame();
-        } catch (final NoLogException e) {
-            Platform.runLater(new Runnable() {
-                public void run() {
-                    final Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("No Log file found");
-                    alert.setHeaderText("No Log file found. Exiting the application...");
-                    alert.setContentText(e.getMessage());
-
-                    alert.showAndWait();
-                    Platform.exit();
-                }
-            });
-        }
-        if (latestGame != null) {
-            if (!gameViewModel.isSameGame(latestGame)) {
+        if (game != null) {
+            if (!gameViewModel.isSameGame(game)) {
                 LOG.info("Something changed, updating");
-                gameViewModel.updateGame(latestGame);
+                gameViewModel.updateGame(game);
                 gameUpdated();
-                final ObservableList<PlayerViewModel> playerViewModels = PlayerViewModelMapper.map(latestGame.getPlayers());
+                final ObservableList<PlayerViewModel> playerViewModels = PlayerViewModelMapper.map(game.getPlayers());
                 int i = 0;
                 for (final PlayerViewModel playerViewModel : playerViewModels) {
                     timer.schedule(new TimerTask() {
@@ -308,7 +317,6 @@ public class MainTableView extends Application {
                                         playerViewModel.setTwoVsTwo(statistics.getTwoVsTwo());
                                         playerViewModel.setThreeVsThreeSolo(statistics.getThreeVSThreeSolo());
                                         playerViewModel.setThreeVsThreeStandard(statistics.getThreeVsThree());
-                                        playerViewModel.setAverage(statistics.getAverage());
                                         Platform.runLater(new Runnable() {
                                                               public void run() {
                                                                   table.sort();
@@ -334,9 +342,7 @@ public class MainTableView extends Application {
                 LOG.info("Same game, won't update");
             }
         } else {
-//            gameViewModel.updateGame(null);
-//            updateItems(FXCollections.<PlayerViewModel>emptyObservableList());
-//            gameUpdated();
+
         }
     }
 
@@ -352,7 +358,6 @@ public class MainTableView extends Application {
                 final SortedList<PlayerViewModel> sortedData = new SortedList<PlayerViewModel>(filteredList);
                 sortedData.comparatorProperty().bind(table.comparatorProperty());
                 table.setItems(sortedData);
-
                 table.sort();
 
             }
@@ -381,16 +386,6 @@ public class MainTableView extends Application {
         });
     }
 
-    Runnable reload = new Runnable() {
-        public void run() {
-            try {
-                reloadData();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
-    };
 
     public static void openWebpage(URI uri) {
         Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
@@ -403,4 +398,9 @@ public class MainTableView extends Application {
         }
     }
 
+    @Override
+    public void gameDataChanged(GameData gameData) {
+        final Game game = GameMapper.map(gameData);
+        reloadData(game);
+    }
 }

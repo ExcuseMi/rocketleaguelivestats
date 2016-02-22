@@ -2,32 +2,31 @@ package com.excuseme.rocketleaguelivestats.view.model;
 
 import com.excuseme.rocketleaguelivestats.model.Player;
 import com.excuseme.rocketleaguelivestats.model.PlayerIdentifier;
+import com.excuseme.rocketleaguelivestats.model.Rank;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 public class PlayerViewModel {
     private final SimpleStringProperty name;
     private final SimpleStringProperty system;
-    private final SimpleIntegerProperty oneVsOne;
-    private final SimpleIntegerProperty twoVsTwo;
-    private final SimpleIntegerProperty threeVsThreeSolo;
-    private final SimpleIntegerProperty threeVsThreeStandard;
+    private final SimpleObjectProperty<Rank> oneVsOne;
+    private final SimpleObjectProperty<Rank> twoVsTwo;
+    private final SimpleObjectProperty<Rank> threeVsThreeSolo;
+    private final SimpleObjectProperty<Rank> threeVsThreeStandard;
     private final PlayerIdentifier playerIdentifier;
     private final SimpleBooleanProperty active;
-    private final SimpleIntegerProperty average;
     private final boolean ownPlayer;
 
     public PlayerViewModel(Player player) {
         name = new SimpleStringProperty(player.getName());
         system = new SimpleStringProperty(player.getPlayerIdentifier().getGamingSystem().name());
-        oneVsOne = new SimpleIntegerProperty();
-        twoVsTwo = new SimpleIntegerProperty();
-        threeVsThreeSolo = new SimpleIntegerProperty();
-        threeVsThreeStandard = new SimpleIntegerProperty();
+        oneVsOne = new SimpleObjectProperty<Rank>();
+        twoVsTwo = new SimpleObjectProperty<Rank>();
+        threeVsThreeSolo = new SimpleObjectProperty<Rank>();
+        threeVsThreeStandard = new SimpleObjectProperty<Rank>();
         active = new SimpleBooleanProperty(player.isActive());
         this.playerIdentifier = player.getPlayerIdentifier();
-        average = new SimpleIntegerProperty();
         ownPlayer = player.isOwnPlayer();
 
     }
@@ -56,51 +55,51 @@ public class PlayerViewModel {
         this.system.set(system);
     }
 
-    public Integer getOneVsOne() {
+    public Rank getOneVsOne() {
         return oneVsOne.get();
     }
 
-    public SimpleIntegerProperty oneVsOneProperty() {
+    public SimpleObjectProperty<Rank> oneVsOneProperty() {
         return oneVsOne;
     }
 
-    public void setOneVsOne(Integer oneVsOne) {
+    public void setOneVsOne(Rank oneVsOne) {
         this.oneVsOne.set(oneVsOne);
     }
 
-    public Integer getTwoVsTwo() {
+    public Rank getTwoVsTwo() {
         return twoVsTwo.get();
     }
 
-    public SimpleIntegerProperty twoVsTwoProperty() {
+    public SimpleObjectProperty<Rank> twoVsTwoProperty() {
         return twoVsTwo;
     }
 
-    public void setTwoVsTwo(Integer twoVsTwo) {
+    public void setTwoVsTwo(Rank twoVsTwo) {
         this.twoVsTwo.set(twoVsTwo);
     }
 
-    public Integer getThreeVsThreeSolo() {
+    public Rank getThreeVsThreeSolo() {
         return threeVsThreeSolo.get();
     }
 
-    public SimpleIntegerProperty threeVsThreeSoloProperty() {
+    public SimpleObjectProperty<Rank> threeVsThreeSoloProperty() {
         return threeVsThreeSolo;
     }
 
-    public void setThreeVsThreeSolo(Integer threeVsThreeSolo) {
+    public void setThreeVsThreeSolo(Rank threeVsThreeSolo) {
         this.threeVsThreeSolo.set(threeVsThreeSolo);
     }
 
-    public Integer getThreeVsThreeStandard() {
+    public Rank getThreeVsThreeStandard() {
         return threeVsThreeStandard.get();
     }
 
-    public SimpleIntegerProperty threeVsThreeStandardProperty() {
+    public SimpleObjectProperty<Rank> threeVsThreeStandardProperty() {
         return threeVsThreeStandard;
     }
 
-    public void setThreeVsThreeStandard(Integer threeVsThreeStandard) {
+    public void setThreeVsThreeStandard(Rank threeVsThreeStandard) {
         this.threeVsThreeStandard.set(threeVsThreeStandard);
     }
 
@@ -136,18 +135,6 @@ public class PlayerViewModel {
                 ",3v3 Solo=" + threeVsThreeSolo.get() +
                 ",3v3=" + threeVsThreeStandard.get() +
                 '}';
-    }
-
-    public Integer getAverage() {
-        return average.get();
-    }
-
-    public SimpleIntegerProperty averageProperty() {
-        return average;
-    }
-
-    public void setAverage(Integer average) {
-        this.average.set(average);
     }
 
     public PlayerIdentifier getPlayerIdentifier() {
