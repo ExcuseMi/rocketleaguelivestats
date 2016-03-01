@@ -1,26 +1,29 @@
 package com.excuseme.rocketleaguelivestats.view;
 
 import com.excuseme.rocketleaguelivestats.model.*;
-import com.excuseme.rocketleaguelivestats.repository.*;
+import com.excuseme.rocketleaguelivestats.repository.CachedStatisticsRepository;
+import com.excuseme.rocketleaguelivestats.repository.GameDataListener;
+import com.excuseme.rocketleaguelivestats.repository.GameMapper;
 import com.excuseme.rocketleaguelivestats.scanner.TailingFileScanner;
 import com.excuseme.rocketleaguelivestats.scanner.model.GameData;
+import com.excuseme.rocketleaguelivestats.scanner.model.SessionData;
 import com.excuseme.rocketleaguelivestats.view.model.GameViewModel;
 import com.excuseme.rocketleaguelivestats.view.model.PlayerViewModel;
 import com.excuseme.rocketleaguelivestats.view.model.mapper.PlayerViewModelMapper;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
-import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -39,10 +42,11 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class MainTableView extends Application implements GameDataListener{
     private static final String FOLDER = FileSystemView.getFileSystemView().getDefaultDirectory().getPath() + File.separator + "my games" + File.separator + "Rocket League" + File.separator + "TAGame" + File.separator + "Logs" + File.separator;
@@ -60,14 +64,10 @@ public class MainTableView extends Application implements GameDataListener{
             if (o2 == null) {
                 return +1;
             }
-            if (!Objects.equals(o1.getTier().getTier(), o2.getTier().getTier())) {
-                return Integer.compare(o1.getTier().getTier(), o2.getTier().getTier());
-            } else {
-                return Integer.compare(o1.getRating() != null ? o1.getRating() : -1, o2.getRating() != null ? o2.getRating() : -1);
-            }
+            return o1.compareTo(o2);
         }
     };
-    public static final double RANK_COLUMN_WIDTH = 140d;
+    public static final double RANK_COLUMN_WIDTH = 160d;
     private final GameViewModel gameViewModel;
     private javafx.scene.control.TableView table = new javafx.scene.control.TableView();
     private ScheduledExecutorService executor;
@@ -97,7 +97,7 @@ public class MainTableView extends Application implements GameDataListener{
         stage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream("rlicon.png")));
 
         stage.setTitle("Rocket league Live Stats");
-        stage.setWidth(870);
+        stage.setWidth(950);
         stage.setResizable(false);
 
         stage.setOnCloseRequest(new EventHandler() {
@@ -113,7 +113,15 @@ public class MainTableView extends Application implements GameDataListener{
 
         gameLabel.textProperty().bind(gameViewModel.labelPropertyProperty());
         table.setEditable(true);
-
+        table.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+                if(oldValue != null) ((PlayerViewModel) oldValue).setExpand(false);
+                if(newValue != null) ((PlayerViewModel) newValue).setExpand(true);
+                ((TableColumn) table.getColumns().get(0)).setVisible(false);
+                ((TableColumn) table.getColumns().get(0)).setVisible(true);
+            }
+        });
         final Callback<TableColumn<PlayerViewModel, String>, TableCell<PlayerViewModel, String>> styleNotActive = new Callback<TableColumn<PlayerViewModel, String>, TableCell<PlayerViewModel, String>>() {
             public TableCell<PlayerViewModel, String> call(TableColumn<PlayerViewModel, String> tableColumn) {
                 return new TableCell<PlayerViewModel, String>() {
@@ -161,6 +169,8 @@ public class MainTableView extends Application implements GameDataListener{
                                 }
                             }
                         }
+                        final StringBuilder stringBuilder = new StringBuilder();
+
                         final TableRow tableRow = getTableRow();
                         if (tableRow != null && tableRow.getItem() != null) {
                             final PlayerViewModel playerViewModel = (PlayerViewModel) tableRow.getItem();
@@ -168,10 +178,38 @@ public class MainTableView extends Application implements GameDataListener{
                                 getStyleClass().add("styleNotActive");
 
                             }
+                            if(rank != null) {
+                                if(rank.getLeaderboardPosition() != null) {
+                                    stringBuilder.append("#" ).append(rank.getLeaderboardPosition()).append(" ");
+                                }
+                                stringBuilder.append(String.valueOf(rank.getTier().getText()));
+                                if (rank.getDivision() != null) {
+                                    stringBuilder.append("\nDivision: ").append(rank.getDivision());
+                                }
+                                if (rank.getRating() != null && rank.getRating() >0) {
+                                    stringBuilder.append("\nRating: ").append(rank.getRating());
+                                }
+                                final Skill skill = rank.getSkill();
+                                if(skill != null) {
+                                    if (skill.getMmr() != null) {
+                                        stringBuilder.append("\nMMR: ").append(skill.getMmr().toString());
+                                    }
+                                    if(playerViewModel.getExpand()) {
+                                        if (skill.getMu() != null) {
+                                            stringBuilder.append("\nMu: ").append(skill.getMu().toString());
+                                        }
+                                        if (skill.getSigma() != null) {
+                                            stringBuilder.append("\nSigma: ").append(skill.getSigma().toString());
+                                        }
+                                        if (skill.getMatchesPlayed() != null) {
+                                            stringBuilder.append("\nMatches played: ").append(skill.getMatchesPlayed().toString());
+                                        }
+                                    }
+                                }
+                            }
                         }
-                        String value = rank != null ? String.valueOf(rank.getTier().getText()) : "";
-                        value += rank != null && rank.getRating() != null ? "\n(Rating " + rank.getRating() + ")" : "";
-                        setText(value);
+
+                        setText(stringBuilder.toString());
                         if(rank != null && rank.getTier() != null) {
                             final InputStream resourceAsStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ranks/" + rank.getTier().getTier() + ".png");
                             final Image image = new Image(resourceAsStream,30d,30d, true, true);
@@ -197,7 +235,7 @@ public class MainTableView extends Application implements GameDataListener{
         nameCol.setCellValueFactory(
                 new PropertyValueFactory<PlayerViewModel, String>("name"));
         nameCol.setCellFactory(styleNotActive);
-        table.setPrefHeight(400);
+        table.setPrefHeight(600);
         table.setRowFactory(new Callback<TableView<PlayerViewModel>, TableRow<PlayerViewModel>>() {
             public TableRow<PlayerViewModel> call(TableView<PlayerViewModel> tableView) {
                 final TableRow<PlayerViewModel> row = new TableRow<PlayerViewModel>() {
@@ -212,7 +250,7 @@ public class MainTableView extends Application implements GameDataListener{
                         } else {
                             getStyleClass().removeAll(Collections.singleton("styleOwnPlayer"));
                         }
-                        setPrefHeight(40d);
+//                        setPrefHeight(40d);
                     }
                 };
                 row.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -222,7 +260,10 @@ public class MainTableView extends Application implements GameDataListener{
                             final PlayerIdentifier playerIdentifier = rowData.getPlayerIdentifier();
                             if (!GamingSystem.BOT.equals(playerIdentifier.getGamingSystem())) {
                                 try {
-                                    openWebpage(new URI(StatisticsRepository.createURL(playerIdentifier.getPlayerId(), playerIdentifier.getGamingSystem().getQualifier())));
+                                    final String url = statisticsRepository.createUrl(playerIdentifier);
+                                    if(url != null) {
+                                        openWebpage(new URI(url));
+                                    }
                                 } catch (URISyntaxException e) {
                                     e.printStackTrace();
                                 }
@@ -303,46 +344,26 @@ public class MainTableView extends Application implements GameDataListener{
                 gameViewModel.updateGame(game);
                 gameUpdated();
                 final ObservableList<PlayerViewModel> playerViewModels = PlayerViewModelMapper.map(game.getPlayers());
-                int i = 0;
-                for (final PlayerViewModel playerViewModel : playerViewModels) {
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            try {
-                                PlayerIdentifier playerIdentifier = playerViewModel.getPlayerIdentifier();
-                                if (!GamingSystem.BOT.equals(playerIdentifier.getGamingSystem())) {
-                                    Statistics statistics = statisticsRepository.find(gameViewModel.getGameIdentifier(), playerIdentifier);
-                                    if (statistics != null) {
-                                        playerViewModel.setOneVsOne(statistics.getOneVsOne());
-                                        playerViewModel.setTwoVsTwo(statistics.getTwoVsTwo());
-                                        playerViewModel.setThreeVsThreeSolo(statistics.getThreeVSThreeSolo());
-                                        playerViewModel.setThreeVsThreeStandard(statistics.getThreeVsThree());
-                                        Platform.runLater(new Runnable() {
-                                                              public void run() {
-                                                                  table.sort();
-
-                                                              }
-                                                          }
-                                        );
-
-                                    } else {
-                                    }
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-
+                final List<PlayerIdentifier> playerIdentifiers = playerViewModels.stream().map(p -> p.getPlayerIdentifier()).collect(Collectors.toList());
+                try {
+                    final Map<PlayerIdentifier, Statistics> map = statisticsRepository.findAll(game.getIdentifier(), playerIdentifiers);
+                    map.keySet().stream().forEach(k->playerViewModels.stream().filter(m->Objects.equals(k, m.getPlayerIdentifier())).findFirst().ifPresent(m-> {
+                        final Statistics statistics = map.get(k);
+                        if(statistics != null) {
+                            m.setOneVsOne(statistics.getOneVsOne());
+                            m.setTwoVsTwo(statistics.getTwoVsTwo());
+                            m.setThreeVsThreeStandard(statistics.getThreeVsThree());
+                            m.setThreeVsThreeSolo(statistics.getThreeVSThreeSolo());
                         }
-                    }, i);
-                    i+=2000;
-                }
+                    }));
 
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 updateItems(playerViewModels);
             } else {
                 LOG.info("Same game, won't update");
             }
-        } else {
-
         }
     }
 
@@ -396,6 +417,11 @@ public class MainTableView extends Application implements GameDataListener{
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void sessionDataChanged(SessionData sessionData) {
+        statisticsRepository.updateSessionData(sessionData);
     }
 
     @Override

@@ -108,7 +108,6 @@ public class GameData {
                 ", playerRemoveds=" + playerRemoveds +
                 ", ended=" + ended +
                 ", gameType=" + gameType +
-                ", ownPlayer=" + ownPlayer +
                 '}';
     }
 
@@ -155,15 +154,15 @@ public class GameData {
         return gameType;
     }
 
-    public void setOwnPlayer(OwnPlayer ownPlayer) {
-        this.ownPlayer = ownPlayer;
+    public GameData clone() {
+        return new GameData(this);
     }
 
     public OwnPlayer getOwnPlayer() {
         return ownPlayer;
     }
 
-    public GameData clone() {
-        return new GameData(this);
+    public void setOwnPlayer(OwnPlayer ownPlayer) {
+        this.ownPlayer = ownPlayer;
     }
 }

@@ -51,10 +51,8 @@ public class GameMapper {
                 row = namePlate.getRow();
             }
 
-            Team team = calculateTeam(playerNames.size(), row);
-
             boolean active = isPlayerActive(playerRemoveds, playerName);
-            final Player player = new Player(number, row, nickName, new PlayerIdentifier(id, gamingSystem), team, active, ownPlayer);
+            final Player player = new Player(number, row, nickName, new PlayerIdentifier(id, gamingSystem), active, ownPlayer);
             players.add(player);
         }
 

@@ -17,6 +17,7 @@ public class PlayerViewModel {
     private final PlayerIdentifier playerIdentifier;
     private final SimpleBooleanProperty active;
     private final boolean ownPlayer;
+    private final SimpleBooleanProperty expand;
 
     public PlayerViewModel(Player player) {
         name = new SimpleStringProperty(player.getName());
@@ -28,6 +29,7 @@ public class PlayerViewModel {
         active = new SimpleBooleanProperty(player.isActive());
         this.playerIdentifier = player.getPlayerIdentifier();
         ownPlayer = player.isOwnPlayer();
+        expand = new SimpleBooleanProperty(false);
 
     }
 
@@ -101,6 +103,18 @@ public class PlayerViewModel {
 
     public void setThreeVsThreeStandard(Rank threeVsThreeStandard) {
         this.threeVsThreeStandard.set(threeVsThreeStandard);
+    }
+
+    public boolean getExpand() {
+        return expand.get();
+    }
+
+    public SimpleBooleanProperty expandProperty() {
+        return expand;
+    }
+
+    public void setExpand(boolean expand) {
+        this.expand.set(expand);
     }
 
     @Override

@@ -10,33 +10,35 @@ import java.io.File;
 import java.util.*;
 
 public class TailingFileScanner {
-    private final File file;
     private List<LineMatcher<?>> matchers = Arrays.asList(new EventLineMatcher(), new LoadoutValidationLineMatcher(),
             new NamePlateDataLineMatcher(), new RegisterPlayerWithSessionLineMatcher(), new HandlePlayerRemovedLineMatcher(), new GameTypeLineMatcher());
 
     private OwnPlayerLineMatcher ownPlayerLineMatcher;
+    private BuildIdLineMatcher buildIdLineMatcher;
+    private AuthCodeMatcher authCodeMatcher;
     private GameDataListener gameDataListener;
 
     public TailingFileScanner(GameDataListener gameDataListener, File file) {
         this.gameDataListener = gameDataListener;
         final MyTailerListener myTailerListener = new MyTailerListener();
-        Tailer tailer = new Tailer(file, myTailerListener, 5000, false, true, 4096);
+        Tailer tailer = new Tailer(file, myTailerListener, 1000, false, true, 4096);
         Thread thread = new Thread(tailer);
         thread.setDaemon(true);
         thread.start();
-
-        this.file = file;
         ownPlayerLineMatcher = new OwnPlayerLineMatcher();
+        buildIdLineMatcher = new BuildIdLineMatcher();
+        authCodeMatcher = new AuthCodeMatcher();
     }
 
     public class MyTailerListener extends TailerListenerAdapter {
         private GameData gameData = null;
-        private OwnPlayer ownPlayer;
         private GameData recentValidData = null;
+        private SessionData sessionData = new SessionData();
 
         @Override
         public void fileRotated() {
             if(recentValidData != null && !recentValidData.isEmpty()) {
+                sessionData = new SessionData();
                 gameDataListener.gameDataChanged(recentValidData);
             }
         }
@@ -44,23 +46,34 @@ public class TailingFileScanner {
         @Override
         public void endOfFile() {
             if(recentValidData != null && !recentValidData.isEmpty()) {
+                gameDataListener.sessionDataChanged(sessionData);
                 gameDataListener.gameDataChanged(recentValidData);
             }
         }
 
         public void handle(String line) {
-            if (ownPlayer == null) {
+            if(sessionData.getBuildId() == null) {
+                final String match = buildIdLineMatcher.match(line);
+                if(match != null) {
+                    sessionData.setBuildId(match);
+                }
+            }
+            if (sessionData.getOwnPlayer() == null) {
                 final OwnPlayer match = ownPlayerLineMatcher.match(line);
                 if (match != null) {
-                    ownPlayer = match;
+                    sessionData.setOwnPlayer(match);
                 }
+            }
+            final String match = authCodeMatcher.match(line);
+            if(match != null) {
+                sessionData.setAuthCode(match);
             }
             GameData newGameData = scanLine(line, gameData != null ? gameData.clone() : null);
             if(newGameData != null) {
                 gameData = newGameData;
-                gameData.setOwnPlayer(ownPlayer);
                 if(!gameData.isEmpty()) {
                     recentValidData = gameData;
+                    recentValidData.setOwnPlayer(sessionData.getOwnPlayer());
                 }
             }
 

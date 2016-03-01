@@ -5,18 +5,16 @@ public class Player {
     private int row;
     private String name;
     private PlayerIdentifier playerIdentifier;
-    private Team team;
     private boolean active;
     private Statistics statistics;
     private boolean ownPlayer;
 
 
-    public Player(int number, int row, String name, PlayerIdentifier playerIdentifier, Team team, boolean active, boolean ownPlayer) {
+    public Player(int number, int row, String name, PlayerIdentifier playerIdentifier, boolean active, boolean ownPlayer) {
         this.number = number;
         this.row = row;
         this.name = name;
         this.playerIdentifier = playerIdentifier;
-        this.team = team;
         this.active = active;
         this.ownPlayer = ownPlayer;
     }
@@ -35,10 +33,6 @@ public class Player {
 
     public PlayerIdentifier getPlayerIdentifier() {
         return playerIdentifier;
-    }
-
-    public Team getTeam() {
-        return team;
     }
 
     public Statistics getStatistics() {
@@ -83,7 +77,6 @@ public class Player {
                 ", row=" + row +
                 ", name='" + name + '\'' +
                 ", playerIdentifier=" + playerIdentifier +
-                ", team=" + team +
                 ", statistics=" + statistics +
                 '}';
     }
