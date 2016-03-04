@@ -74,7 +74,7 @@ public class StatisticsParser {
                         tier = Tier.findByTier(Integer.parseInt(parameterParts[1]));
                         break;
                     case "Division":
-                        division = Integer.parseInt(parameterParts[1]);
+                        division = Integer.parseInt(parameterParts[1]) + 1;
                         break;
                     case "MatchesPlayed":
                         matchesPlayed = Integer.parseInt(parameterParts[1]);

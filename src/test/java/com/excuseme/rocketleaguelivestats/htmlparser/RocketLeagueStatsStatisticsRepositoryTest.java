@@ -3,10 +3,11 @@ package com.excuseme.rocketleaguelivestats.htmlparser;
 import com.excuseme.rocketleaguelivestats.model.Statistics;
 import com.excuseme.rocketleaguelivestats.repository.rocketleaguestats.RankParser;
 import com.excuseme.rocketleaguelivestats.repository.rocketleaguestats.RocketLeagueStatsStatisticsRepository;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-
+@Ignore
 public class RocketLeagueStatsStatisticsRepositoryTest {
     @Test
     public void testParse() throws Exception {
