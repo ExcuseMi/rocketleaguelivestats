@@ -63,23 +63,11 @@ public class RocketLeagueAPI implements StatisticsRepository {
         httpPost.setEntity(new UrlEncodedFormEntity(postParameters));
         final CloseableHttpResponse response = httpclient.execute(httpPost);
         final Header[] sessionIDs = response.getHeaders("SessionID");
-        if (sessionIDs != null) {
+        if (sessionIDs != null && sessionIDs.length == 1) {
             return sessionIDs[0].getValue();
         }
         throw new IllegalArgumentException("No session found");
     }
-
-
-    public String generateAuth() throws IOException {
-        final List<String> patterns = IOUtils.readLines(Thread.currentThread().getContextClassLoader().getResourceAsStream("auth_code_pattern.txt"));
-        final int rand = new Random().nextInt((10) + 1);
-        String s = patterns.get(0);
-        while (s.contains("x")) {
-            s = s.replaceFirst("x", "F");
-        }
-        return s;
-    }
-
 
     private String doRequest(String sessionID, Command command) throws URISyntaxException, IOException {
         final URI uri = new URIBuilder().setScheme("https").setHost(APPSPOT_URL).setPath(COMMAND_PATH)
@@ -164,9 +152,7 @@ public class RocketLeagueAPI implements StatisticsRepository {
         private final String name;
         private final List<String> parameters;
         private PlayerIdentifier playerIdentifier;
-        private String result;
         private Command(String name, List<String> parameters, PlayerIdentifier playerIdentifier) {
-
             this.name = name;
             this.parameters = parameters;
             this.playerIdentifier = playerIdentifier;
@@ -182,10 +168,6 @@ public class RocketLeagueAPI implements StatisticsRepository {
 
         public PlayerIdentifier getPlayerIdentifier() {
             return playerIdentifier;
-        }
-
-        public String getResult() {
-            return result;
         }
 
     }

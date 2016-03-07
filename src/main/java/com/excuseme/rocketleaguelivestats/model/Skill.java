@@ -33,11 +33,8 @@ public class Skill {
 
     @Override
     public String toString() {
-        return "Skill{" +
-                "mu=" + mu +
-                ", sigma=" + sigma +
-                ", mmr=" + mmr +
-                ", matchesPlayed=" + matchesPlayed +
-                '}';
+        return "mmr=" + mmr;
     }
+
+
 }

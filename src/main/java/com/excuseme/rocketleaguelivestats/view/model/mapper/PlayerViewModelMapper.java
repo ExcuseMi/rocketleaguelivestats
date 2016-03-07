@@ -7,19 +7,27 @@ import javafx.collections.ObservableList;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 public class PlayerViewModelMapper {
 
-    public static ObservableList<PlayerViewModel> map(List<Player> playerList) {
-        ObservableList<PlayerViewModel> playerViewModels = FXCollections.observableArrayList();
+    public static void map(List<Player> playerList, ObservableList<PlayerViewModel> items) {
         for(Player player: playerList) {
             if(player != null) {
-                playerViewModels.add(map(player));
+                final Optional<PlayerViewModel> first = items.stream().filter(p -> p.getPlayerIdentifier().equals(player.getPlayerIdentifier())).findFirst();
+                if(first.isPresent()) {
+                    update(first.get(), player);
+                } else {
+                    items.add(map(player));
+                }
             }
         }
-
-        return playerViewModels;
     }
+
+    private static void update(PlayerViewModel playerViewModel, Player player) {
+        playerViewModel.setActive(player.isActive());
+    }
+
     public static PlayerViewModel map(Player player) {
         return new PlayerViewModel(player);
     }

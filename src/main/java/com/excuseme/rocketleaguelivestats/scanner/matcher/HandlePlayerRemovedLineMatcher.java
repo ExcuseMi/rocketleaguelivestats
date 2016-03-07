@@ -2,13 +2,17 @@ package com.excuseme.rocketleaguelivestats.scanner.matcher;
 
 import com.excuseme.rocketleaguelivestats.scanner.model.HandlePlayerRemoved;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class HandlePlayerRemovedLineMatcher implements LineMatcher<HandlePlayerRemoved> {
 
-    public static final String NAMEPLATE_HANDLE_PLAYER_REMOVED = "Nameplate: HandlePlayerRemoved ";
+    private static final Pattern NAMEPLATE_HANDLE_PLAYER_REMOVED = Pattern.compile("^\\[\\d*\\.?\\d*\\] Nameplate: HandlePlayerRemoved (.*)$");
 
     public HandlePlayerRemoved match(String line) {
-        if(line.contains(NAMEPLATE_HANDLE_PLAYER_REMOVED)) {
-            return new HandlePlayerRemoved(line.substring(line.indexOf(NAMEPLATE_HANDLE_PLAYER_REMOVED) + NAMEPLATE_HANDLE_PLAYER_REMOVED.length()));
+        final Matcher matcher = NAMEPLATE_HANDLE_PLAYER_REMOVED.matcher(line);
+        if(matcher.matches()) {
+            return new HandlePlayerRemoved(matcher.group(1));
         }
         return null;
     }

@@ -9,22 +9,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StatisticsParser {
-    private static final Pattern PLAYLIST_PATTERN = Pattern.compile("^Playlist=(\\d+).*");
+    private static final Pattern PLAYLIST_PATTERN = Pattern.compile("^Playlist=(\\d+)&Mu=(\\d*\\.?\\d*)&Sigma=(\\d*\\.?\\d*)&Tier=(\\d+)&Division=(\\d+)&MatchesPlayed=(\\d+)&MMR=(\\d*\\.?\\d*)$");
 
     public Statistics parse(String text) throws UnsupportedEncodingException {
+        if(text == null || "".equals(text)) {
+            return null;
+        }
         final String[] lines = text.split("\\n|\\r");
         final Statistics statistics = new Statistics();
-        statistics.setOneVsOne(new Rank(Tier.UNRANKED, 0, null, null));
-        statistics.setTwoVsTwo(new Rank(Tier.UNRANKED, 0, null, null));
-        statistics.setThreeVSThreeSolo(new Rank(Tier.UNRANKED, 0, null, null));
-        statistics.setThreeVsThree(new Rank(Tier.UNRANKED, 0, null, null));
+
+        statistics.setOneVsOne(new Rank(Tier.UNRANKED, null));
+        statistics.setTwoVsTwo(new Rank(Tier.UNRANKED, null));
+        statistics.setThreeVSThreeSolo(new Rank(Tier.UNRANKED, null));
+        statistics.setThreeVsThree(new Rank(Tier.UNRANKED, null));
 
         for (String line : lines) {
             final Matcher matcher = PLAYLIST_PATTERN.matcher(line);
             if (matcher.matches()) {
                 final PlaylistType playlistType = PlaylistType.findByPlaylistId(Integer.parseInt(matcher.group(1)));
                 if (playlistType.isRanked()) {
-                    Rank rank = parseLine(line);
+                    Rank rank = parseLine(matcher);
                     switch (playlistType) {
                         case DUEL_RANKED:
                             statistics.setOneVsOne(rank);
@@ -47,46 +51,16 @@ public class StatisticsParser {
         return statistics;
     }
 
-    private Rank parseLine(String line) throws UnsupportedEncodingException {
-        final String[] parameters = URLDecoder.decode(line, "UTF-8").split("&");
-        BigDecimal mu = new BigDecimal(0);
-        BigDecimal sigma = new BigDecimal(0);
-        BigDecimal mmr = new BigDecimal(0);
-        Tier tier = Tier.UNRANKED;
-        Integer division = 0;
-        Integer matchesPlayed = 0;
-        Integer rating = 0;
+    private Rank parseLine(Matcher matcher) throws UnsupportedEncodingException {
+        BigDecimal mu = new BigDecimal(matcher.group(2));
+        BigDecimal sigma = new BigDecimal(matcher.group(3));
+        BigDecimal mmr = new BigDecimal(matcher.group(7));
+        Tier tier = Tier.findByTier( Integer.parseInt(matcher.group(4)));
+        Integer division = Integer.parseInt(matcher.group(5))+1;
+        Integer matchesPlayed = Integer.parseInt(matcher.group(6));
 
-        for (String parameter : parameters) {
-            final String[] parameterParts = parameter.split("=");
-            if (2 == parameterParts.length) {
-                switch (parameterParts[0]) {
-                    case "Mu":
-                        mu = new BigDecimal(parameterParts[1]);
-                        break;
-                    case "Sigma":
-                        sigma = new BigDecimal(parameterParts[1]);
-                        break;
-                    case "MMR":
-                        mmr = new BigDecimal(parameterParts[1]);
-                        break;
-                    case "Tier":
-                        tier = Tier.findByTier(Integer.parseInt(parameterParts[1]));
-                        break;
-                    case "Division":
-                        division = Integer.parseInt(parameterParts[1]) + 1;
-                        break;
-                    case "MatchesPlayed":
-                        matchesPlayed = Integer.parseInt(parameterParts[1]);
-                        break;
-                    case "Rating":
-                        rating = Integer.parseInt(parameterParts[1]);
-                        break;
-                }
-            }
-        }
         final Skill skill = new Skill(mu, sigma, mmr, matchesPlayed);
-        final Rank rank = new Rank(tier, division, rating, null);
+        final Rank rank = new Rank(tier, division);
         rank.setSkill(skill);
         return rank;
     }

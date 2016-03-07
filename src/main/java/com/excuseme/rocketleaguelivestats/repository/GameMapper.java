@@ -1,7 +1,7 @@
 package com.excuseme.rocketleaguelivestats.repository;
 
 import com.excuseme.rocketleaguelivestats.model.*;
-import com.excuseme.rocketleaguelivestats.scanner.matcher.OwnPlayer;
+import com.excuseme.rocketleaguelivestats.scanner.model.OwnPlayer;
 import com.excuseme.rocketleaguelivestats.scanner.model.*;
 
 import java.util.*;

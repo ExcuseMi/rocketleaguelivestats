@@ -1,7 +1,5 @@
 package com.excuseme.rocketleaguelivestats.scanner.model;
 
-import com.excuseme.rocketleaguelivestats.scanner.matcher.OwnPlayer;
-
 import java.util.HashSet;
 import java.util.Set;
 

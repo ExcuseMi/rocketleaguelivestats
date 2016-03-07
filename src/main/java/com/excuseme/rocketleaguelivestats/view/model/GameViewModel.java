@@ -29,7 +29,15 @@ public class GameViewModel {
         if(this.game == null) {
             return false;
         }
-        return this.game.equals(game);
+        return this.game.getIdentifier().equals(game.getIdentifier());
+    }
+
+    public boolean isGameUpdated(Game game) {
+        if(this.game == null) {
+            return true;
+        }
+        return !this.game.equals(game);
+
     }
 
     public String getGameIdentifier() {

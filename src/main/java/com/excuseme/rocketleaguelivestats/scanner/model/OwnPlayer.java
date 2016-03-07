@@ -1,4 +1,4 @@
-package com.excuseme.rocketleaguelivestats.scanner.matcher;
+package com.excuseme.rocketleaguelivestats.scanner.model;
 
 public class OwnPlayer {
 

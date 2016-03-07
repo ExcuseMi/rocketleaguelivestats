@@ -1,5 +1,6 @@
 package com.excuseme.rocketleaguelivestats.view.model;
 
+import com.excuseme.rocketleaguelivestats.model.GamingSystem;
 import com.excuseme.rocketleaguelivestats.model.Player;
 import com.excuseme.rocketleaguelivestats.model.PlayerIdentifier;
 import com.excuseme.rocketleaguelivestats.model.Rank;
@@ -9,7 +10,7 @@ import javafx.beans.property.SimpleStringProperty;
 
 public class PlayerViewModel {
     private final SimpleStringProperty name;
-    private final SimpleStringProperty system;
+    private final SimpleObjectProperty<GamingSystem> system;
     private final SimpleObjectProperty<Rank> oneVsOne;
     private final SimpleObjectProperty<Rank> twoVsTwo;
     private final SimpleObjectProperty<Rank> threeVsThreeSolo;
@@ -18,10 +19,11 @@ public class PlayerViewModel {
     private final SimpleBooleanProperty active;
     private final boolean ownPlayer;
     private final SimpleBooleanProperty expand;
+    private boolean hasStatistics;
 
     public PlayerViewModel(Player player) {
         name = new SimpleStringProperty(player.getName());
-        system = new SimpleStringProperty(player.getPlayerIdentifier().getGamingSystem().name());
+        system = new SimpleObjectProperty<GamingSystem>(player.getPlayerIdentifier().getGamingSystem());
         oneVsOne = new SimpleObjectProperty<Rank>();
         twoVsTwo = new SimpleObjectProperty<Rank>();
         threeVsThreeSolo = new SimpleObjectProperty<Rank>();
@@ -29,6 +31,7 @@ public class PlayerViewModel {
         active = new SimpleBooleanProperty(player.isActive());
         this.playerIdentifier = player.getPlayerIdentifier();
         ownPlayer = player.isOwnPlayer();
+        hasStatistics = false;
         expand = new SimpleBooleanProperty(false);
 
     }
@@ -45,15 +48,15 @@ public class PlayerViewModel {
         this.name.set(name);
     }
 
-    public String getSystem() {
+    public GamingSystem getSystem() {
         return system.get();
     }
 
-    public SimpleStringProperty systemProperty() {
+    public SimpleObjectProperty<GamingSystem> systemProperty() {
         return system;
     }
 
-    public void setSystem(String system) {
+    public void setSystem(GamingSystem system) {
         this.system.set(system);
     }
 
@@ -169,5 +172,13 @@ public class PlayerViewModel {
 
     public boolean isOwnPlayer() {
         return ownPlayer;
+    }
+
+    public void setHasStatistics(boolean hasStatistics) {
+        this.hasStatistics = hasStatistics;
+    }
+
+    public boolean hasStatistics() {
+        return hasStatistics;
     }
 }

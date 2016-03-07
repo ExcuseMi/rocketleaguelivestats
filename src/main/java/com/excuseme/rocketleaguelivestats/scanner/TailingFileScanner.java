@@ -10,6 +10,7 @@ import java.io.File;
 import java.util.*;
 
 public class TailingFileScanner {
+    public static final int DELAY_MILLIS = 2000;
     private List<LineMatcher<?>> matchers = Arrays.asList(new EventLineMatcher(), new LoadoutValidationLineMatcher(),
             new NamePlateDataLineMatcher(), new RegisterPlayerWithSessionLineMatcher(), new HandlePlayerRemovedLineMatcher(), new GameTypeLineMatcher());
 
@@ -21,7 +22,7 @@ public class TailingFileScanner {
     public TailingFileScanner(GameDataListener gameDataListener, File file) {
         this.gameDataListener = gameDataListener;
         final MyTailerListener myTailerListener = new MyTailerListener();
-        Tailer tailer = new Tailer(file, myTailerListener, 1000, false, true, 4096);
+        Tailer tailer = new Tailer(file, myTailerListener, DELAY_MILLIS, false, true, 4096);
         Thread thread = new Thread(tailer);
         thread.setDaemon(true);
         thread.start();

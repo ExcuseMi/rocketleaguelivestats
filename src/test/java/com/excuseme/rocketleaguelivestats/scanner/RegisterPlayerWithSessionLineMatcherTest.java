@@ -12,7 +12,7 @@ public class RegisterPlayerWithSessionLineMatcherTest {
 
     @Test
     public void testPS4() {
-        String ps4Line = "[6570.16] ScriptLog: PRI_TA_67 RegisterPlayerWithSession PS4|assainskid1|0 Game\n";
+        String ps4Line = "[6570.16] ScriptLog: PRI_TA_67 RegisterPlayerWithSession PS4|assainskid1|0 Game";
         PlayerId playerId = registerPlayerWithSessionLineMatcher.match(ps4Line);
         assertNotNull(playerId);
         assertEquals(67, playerId.getNumber());

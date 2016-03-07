@@ -1,7 +1,5 @@
 package com.excuseme.rocketleaguelivestats.scanner.model;
 
-import com.excuseme.rocketleaguelivestats.scanner.matcher.OwnPlayer;
-
 public class SessionData {
     private OwnPlayer ownPlayer;
     private String buildId;
