@@ -10,7 +10,7 @@ import java.io.File;
 import java.util.*;
 
 public class TailingFileScanner {
-    public static final int DELAY_MILLIS = 2000;
+    public static final int DELAY_MILLIS = 1000;
     private List<LineMatcher<?>> matchers = Arrays.asList(new EventLineMatcher(), new LoadoutValidationLineMatcher(),
             new NamePlateDataLineMatcher(), new RegisterPlayerWithSessionLineMatcher(), new HandlePlayerRemovedLineMatcher(), new GameTypeLineMatcher());
 
