@@ -5,27 +5,21 @@ import com.excuseme.rocketleaguelivestats.model.PlayerIdentifier;
 import com.excuseme.rocketleaguelivestats.model.Statistics;
 import com.excuseme.rocketleaguelivestats.repository.StatisticsRepository;
 import com.excuseme.rocketleaguelivestats.scanner.model.SessionData;
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 

@@ -103,13 +103,6 @@ public class GameMapper {
         return null;
     }
 
-    private static Team calculateTeam(int size, int row) {
-        if (row % 2 == 0) {
-            return Team.BLUE;
-        }
-        return Team.ORANGE;
-    }
-
     private static GamingSystem mapSystem(String system) {
         if ("STEAM".equalsIgnoreCase(system)) {
             return GamingSystem.STEAM;
@@ -136,8 +129,6 @@ public class GameMapper {
                 return namePlate;
             }
         }
-
         return null;
-
     }
 }
