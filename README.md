@@ -1,5 +1,7 @@
 # rocketleaguelivestats
 
+DOES NOT WORK ANYMORE!!!
+
 This awesome sauce tool allows you to checkout the ranks of your opponents while you play!
 
 [Downloads](https://github.com/ExcuseMi/rocketleaguelivestats/releases)
