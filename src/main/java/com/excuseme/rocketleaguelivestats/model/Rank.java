@@ -1,15 +1,14 @@
 package com.excuseme.rocketleaguelivestats.model;
 
-import java.math.BigDecimal;
-
 public class Rank implements Comparable<Rank>{
     private Tier tier;
     private Integer division;
-    private Skill skill;
+    private Integer rating;
 
-    public Rank(Tier tier, Integer division) {
+    public Rank(Tier tier, Integer division, Integer rating) {
         this.tier = tier;
         this.division = division;
+        this.rating = rating;
     }
 
     public Tier getTier() {
@@ -20,27 +19,14 @@ public class Rank implements Comparable<Rank>{
         return division;
     }
 
-    public Skill getSkill() {
-        return skill;
-    }
-
-    public void setSkill(Skill skill) {
-        this.skill = skill;
-    }
-
-    @Override
-    public String toString() {
-        return "Rank{" +
-                "tier=" + tier +
-                ", division=" + division +
-                ", skill=" + skill +
-                '}';
+    public Integer getRating() {
+        return rating;
     }
 
     @Override
     public int compareTo(Rank o) {
-        final BigDecimal mmr1 = getSkill() != null ? getSkill().getMmr() : new BigDecimal("0");
-        final BigDecimal mmr2 = o.getSkill() != null ? o.getSkill().getMmr() : new BigDecimal("0");
-        return mmr1.compareTo(mmr2);
+        final Integer rating1 = getRating() != null ? getRating() : 0;
+        final Integer rating2 = o.getRating() != null ? getRating() :0;
+        return rating1.compareTo(rating2);
     }
 }

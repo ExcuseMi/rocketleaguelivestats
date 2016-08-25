@@ -1,18 +1,17 @@
 package com.excuseme.rocketleaguelivestats.model;
 
 public enum GamingSystem {
-    STEAM("steam","gamingsystem/steam.png"), PS4("ps4","gamingsystem/Ps4.png"), BOT("other");
+    STEAM("steam","gamingsystem/steam.png", 3), PS4("ps4","gamingsystem/Ps4.png",2), XBOX("xbox","",3), BOT("other", "", null);
 
     private String qualifier;
     private String iconPath;
+    private Integer apiId;
 
-    private GamingSystem(String qualifier) {
-        this.qualifier = qualifier;
-        this.iconPath = null;
-    }
-    private GamingSystem(String qualifier, String iconPath) {
+    private GamingSystem(String qualifier, String iconPath, Integer apiId) {
         this.qualifier = qualifier;
         this.iconPath = iconPath;
+        this.apiId = apiId;
+
     }
 
     public String getQualifier() {
@@ -22,4 +21,6 @@ public enum GamingSystem {
     public String getIconPath() {
         return iconPath;
     }
+
+    public Integer getApiId() { return apiId; }
 }

@@ -231,10 +231,6 @@ public class MainTableView extends Application implements GameDataListener {
     }
 
 
-    @Override
-    public void sessionDataChanged(SessionData sessionData) {
-        statisticsRepository.updateSessionData(sessionData);
-    }
 
     @Override
     public void gameDataChanged(GameData gameData) {

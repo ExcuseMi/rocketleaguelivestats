@@ -11,12 +11,11 @@ import java.util.*;
 
 public class TailingFileScanner {
     public static final int DELAY_MILLIS = 1000;
-    private List<LineMatcher<?>> matchers = Arrays.asList(new EventLineMatcher(), new LoadoutValidationLineMatcher(),
-            new NamePlateDataLineMatcher(), new RegisterPlayerWithSessionLineMatcher(), new HandlePlayerRemovedLineMatcher(), new GameTypeLineMatcher());
+    private List<LineMatcher<?>> matchers = Arrays.asList(new EventLineMatcher(), new LoadoutValidationLineMatcher()
+            , new RegisterPlayerWithSessionLineMatcher(), new HandlePlayerRemovedLineMatcher(), new GameTypeLineMatcher());
 
     private OwnPlayerLineMatcher ownPlayerLineMatcher;
     private BuildIdLineMatcher buildIdLineMatcher;
-    private AuthCodeMatcher authCodeMatcher;
     private GameDataListener gameDataListener;
 
     public TailingFileScanner(GameDataListener gameDataListener, File file) {
@@ -28,7 +27,6 @@ public class TailingFileScanner {
         thread.start();
         ownPlayerLineMatcher = new OwnPlayerLineMatcher();
         buildIdLineMatcher = new BuildIdLineMatcher();
-        authCodeMatcher = new AuthCodeMatcher();
     }
 
     public class MyTailerListener extends TailerListenerAdapter {
@@ -47,7 +45,6 @@ public class TailingFileScanner {
         @Override
         public void endOfFile() {
             if(recentValidData != null && !recentValidData.isEmpty()) {
-                gameDataListener.sessionDataChanged(sessionData);
                 gameDataListener.gameDataChanged(recentValidData);
             }
         }
@@ -64,10 +61,6 @@ public class TailingFileScanner {
                 if (match != null) {
                     sessionData.setOwnPlayer(match);
                 }
-            }
-            final String match = authCodeMatcher.match(line);
-            if(match != null) {
-                sessionData.setAuthCode(match);
             }
             GameData newGameData = scanLine(line, gameData != null ? gameData.clone() : null);
             if(newGameData != null) {
@@ -95,9 +88,6 @@ public class TailingFileScanner {
                         return gameData;
 
                     }
-                } else if (NamePlate.class.isInstance(match)) {
-                    gameData.addNamePlate(NamePlate.class.cast(match));
-                    return gameData;
                 } else if (PlayerName.class.isInstance(match)) {
                     gameData.addPlayerName(PlayerName.class.cast(match));
                     return gameData;

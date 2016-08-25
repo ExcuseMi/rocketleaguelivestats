@@ -5,7 +5,6 @@ import java.util.Set;
 
 public class GameData {
     private String identifier;
-    private Set<NamePlate> namePlates;
     private Set<PlayerName> playerNames;
     private Set<PlayerId> playerIds;
     private Set<HandlePlayerRemoved> playerRemoveds;
@@ -15,7 +14,6 @@ public class GameData {
 
     public GameData(String identifier) {
         this.identifier = identifier;
-        namePlates = new HashSet<NamePlate>();
         playerNames = new HashSet<PlayerName>();
         playerIds = new HashSet<PlayerId>();
         playerRemoveds = new HashSet<HandlePlayerRemoved>();
@@ -25,23 +23,12 @@ public class GameData {
 
     private GameData(GameData gameData) {
         this.identifier = gameData.identifier;
-        namePlates = gameData.namePlates;
         playerNames = gameData.playerNames;
         playerIds = gameData.playerIds;
         playerRemoveds = gameData.playerRemoveds;
         gameType = gameData.gameType;
         ended = gameData.ended;
         ownPlayer = gameData.ownPlayer;
-    }
-
-
-    public void addNamePlate(NamePlate namePlate) {
-        if(!ended) {
-            if (namePlates.contains(namePlate)) {
-                namePlates.remove(namePlate);
-            }
-            namePlates.add(namePlate);
-        }
     }
 
     public void addPlayerName(PlayerName playerName) {
@@ -74,7 +61,6 @@ public class GameData {
 
         if (ended != gameData.ended) return false;
         if (identifier != null ? !identifier.equals(gameData.identifier) : gameData.identifier != null) return false;
-        if (namePlates != null ? !namePlates.equals(gameData.namePlates) : gameData.namePlates != null) return false;
         if (playerNames != null ? !playerNames.equals(gameData.playerNames) : gameData.playerNames != null)
             return false;
         if (playerIds != null ? !playerIds.equals(gameData.playerIds) : gameData.playerIds != null) return false;
@@ -87,7 +73,6 @@ public class GameData {
     @Override
     public int hashCode() {
         int result = identifier != null ? identifier.hashCode() : 0;
-        result = 31 * result + (namePlates != null ? namePlates.hashCode() : 0);
         result = 31 * result + (playerNames != null ? playerNames.hashCode() : 0);
         result = 31 * result + (playerIds != null ? playerIds.hashCode() : 0);
         result = 31 * result + (playerRemoveds != null ? playerRemoveds.hashCode() : 0);
@@ -100,7 +85,6 @@ public class GameData {
     public String toString() {
         return "GameData{" +
                 "identifier='" + identifier + '\'' +
-                ", namePlates=" + namePlates +
                 ", playerNames=" + playerNames +
                 ", playerIds=" + playerIds +
                 ", playerRemoveds=" + playerRemoveds +
@@ -109,9 +93,6 @@ public class GameData {
                 '}';
     }
 
-    public Set<NamePlate> getNamePlates() {
-        return namePlates;
-    }
 
     public Set<PlayerName> getPlayerNames() {
         return playerNames;
@@ -126,7 +107,7 @@ public class GameData {
     }
 
     public boolean isEmpty() {
-        return namePlates.isEmpty() || playerNames.isEmpty() || playerIds.isEmpty();
+       return playerNames.isEmpty() || playerIds.isEmpty();
     }
 
 

@@ -14,3 +14,9 @@
     -fx-background: -fx-accent;
     -fx-text-fill: -fx-selection-bar-text;
 }
+.table-row-cell {
+    -fx-cell-size: 50px;
+}
+.systemColumn {
+    -fx-font-weight: bold;
+}

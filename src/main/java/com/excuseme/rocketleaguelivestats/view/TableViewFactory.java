@@ -2,8 +2,8 @@ package com.excuseme.rocketleaguelivestats.view;
 
 import com.excuseme.rocketleaguelivestats.model.GamingSystem;
 import com.excuseme.rocketleaguelivestats.model.Rank;
-import com.excuseme.rocketleaguelivestats.model.Skill;
 import com.excuseme.rocketleaguelivestats.view.model.PlayerViewModel;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
@@ -49,10 +49,12 @@ public class TableViewFactory {
         table.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
             @Override
             public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                if(oldValue != null) ((PlayerViewModel) oldValue).setExpand(false);
-                if(newValue != null) ((PlayerViewModel) newValue).setExpand(true);
-                ((TableColumn) table.getColumns().get(0)).setVisible(false);
-                ((TableColumn) table.getColumns().get(0)).setVisible(true);
+                Platform.runLater(() -> {
+                    if(oldValue != null) ((PlayerViewModel) oldValue).setExpand(false);
+                    if(newValue != null) ((PlayerViewModel) newValue).setExpand(true);
+                    ((TableColumn) table.getColumns().get(0)).setVisible(false);
+                    ((TableColumn) table.getColumns().get(0)).setVisible(true);
+                });
             }
         });
         final Callback<TableColumn<PlayerViewModel, String>, TableCell<PlayerViewModel, String>> styleNotActive = new Callback<TableColumn<PlayerViewModel, String>, TableCell<PlayerViewModel, String>>() {
@@ -116,22 +118,8 @@ public class TableViewFactory {
                                 if (rank.getDivision() != null) {
                                     stringBuilder.append("\nDivision: ").append(rank.getDivision());
                                 }
-                                final Skill skill = rank.getSkill();
-                                if(skill != null) {
-                                    if (skill.getMmr() != null) {
-                                        stringBuilder.append("\nMMR: ").append(skill.getMmr().toString());
-                                    }
-                                    if(playerViewModel.getExpand()) {
-                                        if (skill.getMu() != null) {
-                                            stringBuilder.append("\nMu: ").append(skill.getMu().toString());
-                                        }
-                                        if (skill.getSigma() != null) {
-                                            stringBuilder.append("\nSigma: ").append(skill.getSigma().toString());
-                                        }
-                                        if (skill.getMatchesPlayed() != null) {
-                                            stringBuilder.append("\nMatches played: ").append(skill.getMatchesPlayed().toString());
-                                        }
-                                    }
+                                if(rank.getRating() != null) {
+                                    stringBuilder.append("\nRating: ").append(rank.getRating());
                                 }
                             }
                         }
@@ -163,21 +151,14 @@ public class TableViewFactory {
 
                     protected void updateItem(GamingSystem gamingSystem, boolean empty) {
                         super.updateItem(gamingSystem, empty);
-                        getStyleClass().add("-fx-graphic-text-gap: 1em;");
-                        if (gamingSystem != null && gamingSystem.getIconPath() != null) {
-                            final InputStream resourceAsStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(gamingSystem.getIconPath());
-                            final Image image = new Image(resourceAsStream, 30d, 30d, true, true);
-
-                            setGraphic(new ImageView(image));
-                            setText("");
+                        getStyleClass().add("systemColumn");
+                        setGraphic(null);
+                        if(gamingSystem != null) {
+                            setText(gamingSystem.name());
                         } else {
-                            setGraphic(null);
-                            if(gamingSystem != null) {
-                                setText(gamingSystem.name());
-                            } else {
-                                setText("");
-                            }
+                            setText("");
                         }
+                        setRotate(+90);
                         setAlignment(Pos.CENTER);
 
                     }

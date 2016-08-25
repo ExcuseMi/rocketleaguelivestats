@@ -25,7 +25,6 @@ public class GameMapper {
         }
         String identifier = gameData.getIdentifier();
         Set<PlayerId> playerIds = gameData.getPlayerIds();
-        Set<NamePlate> namePlates = gameData.getNamePlates();
         Set<PlayerName> playerNames = gameData.getPlayerNames();
         Set<HandlePlayerRemoved> playerRemoveds = gameData.getPlayerRemoveds();
         final GameType gameType = gameData.getGameType();
@@ -46,11 +45,6 @@ public class GameMapper {
             boolean ownPlayer = calculateOwnPlayer(playerId, gameData.getOwnPlayer(), gamingSystem);
             String nickName = playerName.getName();
             int row = 0;
-            NamePlate namePlate = findNamePlate(namePlates, nickName);
-            if (namePlate != null) {
-                row = namePlate.getRow();
-            }
-
             boolean active = isPlayerActive(playerRemoveds, playerName);
             final Player player = new Player(number, row, nickName, new PlayerIdentifier(id, gamingSystem), active, ownPlayer);
             players.add(player);
@@ -108,6 +102,8 @@ public class GameMapper {
             return GamingSystem.STEAM;
         } else if ("PS4".equalsIgnoreCase(system)) {
             return GamingSystem.PS4;
+        } else if ("XBOX".equalsIgnoreCase(system)) {
+            return GamingSystem.XBOX;
         } else {
             return GamingSystem.BOT;
         }
@@ -118,15 +114,6 @@ public class GameMapper {
         for (PlayerId playerId : playerIds) {
             if (number == playerId.getNumber()) {
                 return playerId;
-            }
-        }
-        return null;
-    }
-
-    private static NamePlate findNamePlate(Set<NamePlate> namePlates, String name) {
-        for (NamePlate namePlate : namePlates) {
-            if (name.equals(namePlate.getName())) {
-                return namePlate;
             }
         }
         return null;

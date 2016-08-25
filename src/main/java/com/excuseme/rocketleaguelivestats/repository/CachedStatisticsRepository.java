@@ -2,7 +2,7 @@ package com.excuseme.rocketleaguelivestats.repository;
 
 import com.excuseme.rocketleaguelivestats.model.PlayerIdentifier;
 import com.excuseme.rocketleaguelivestats.model.Statistics;
-import com.excuseme.rocketleaguelivestats.repository.rocketleague.RocketLeagueAPI;
+import com.excuseme.rocketleaguelivestats.repository.rocketleague.APIStatisticsRepository;
 import com.excuseme.rocketleaguelivestats.scanner.model.SessionData;
 
 import java.util.HashMap;
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class CachedStatisticsRepository {
 
-    private StatisticsRepository statisticsRepository;
+    private StatisticsRepository statisticsRepository = new APIStatisticsRepository();
     private Map<GamePlayerIdentifier, Statistics> gamePlayerIdentifierStatisticsMap = new HashMap<GamePlayerIdentifier, Statistics>();
 
     public CachedStatisticsRepository() {
@@ -28,7 +28,4 @@ public class CachedStatisticsRepository {
         return results;
     }
 
-    public void updateSessionData(SessionData sessionData) {
-        statisticsRepository = new RocketLeagueAPI(sessionData);
-    }
 }
