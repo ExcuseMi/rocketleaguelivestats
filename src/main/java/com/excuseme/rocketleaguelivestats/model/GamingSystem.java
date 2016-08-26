@@ -1,7 +1,7 @@
 package com.excuseme.rocketleaguelivestats.model;
 
 public enum GamingSystem {
-    STEAM("steam","gamingsystem/steam.png", 3), PS4("ps4","gamingsystem/Ps4.png",2), XBOX("xbox","",3), BOT("other", "", null);
+    STEAM("steam","gamingsystem/steam.png", 3), PS4("ps4","gamingsystem/Ps4.png",2), XBOX("xbox","",1), BOT("other", "", null);
 
     private String qualifier;
     private String iconPath;

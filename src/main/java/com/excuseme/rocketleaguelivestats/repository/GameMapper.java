@@ -31,6 +31,7 @@ public class GameMapper {
         final List<Player> players = new ArrayList<Player>();
 
         for (PlayerName playerName : playerNames) {
+
             PlayerId playerId = findPlayerId(playerIds, playerName.getNumber());
             if (playerId == null) {
                 final PlayerName extensionPlayer = findExtensionPlayer(playerNames, playerName.getName());
@@ -38,10 +39,13 @@ public class GameMapper {
                     playerId = findPlayerId(playerIds, extensionPlayer.getNumber());
                 }
             }
-            int number = playerId != null ? playerId.getNumber() : -1;
             String system = playerId != null ? playerId.getSystem() : null;
             GamingSystem gamingSystem = mapSystem(system);
-            String id = playerId != null ? playerId.getId() : null;
+
+            int number = playerId != null ? playerId.getNumber() : -1;
+
+            String id = GamingSystem.XBOX.equals(gamingSystem) ? playerName.getName() : playerId != null ? playerId.getId() : null;
+
             boolean ownPlayer = calculateOwnPlayer(playerId, gameData.getOwnPlayer(), gamingSystem);
             String nickName = playerName.getName();
             int row = 0;
@@ -102,7 +106,7 @@ public class GameMapper {
             return GamingSystem.STEAM;
         } else if ("PS4".equalsIgnoreCase(system)) {
             return GamingSystem.PS4;
-        } else if ("XBOX".equalsIgnoreCase(system)) {
+        } else if ("XboxOne".equalsIgnoreCase(system)) {
             return GamingSystem.XBOX;
         } else {
             return GamingSystem.BOT;
