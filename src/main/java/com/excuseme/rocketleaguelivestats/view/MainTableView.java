@@ -9,7 +9,6 @@ import com.excuseme.rocketleaguelivestats.repository.GameDataListener;
 import com.excuseme.rocketleaguelivestats.repository.GameMapper;
 import com.excuseme.rocketleaguelivestats.scanner.TailingFileScanner;
 import com.excuseme.rocketleaguelivestats.scanner.model.GameData;
-import com.excuseme.rocketleaguelivestats.scanner.model.SessionData;
 import com.excuseme.rocketleaguelivestats.view.model.GameViewModel;
 import com.excuseme.rocketleaguelivestats.view.model.PlayerViewModel;
 import com.excuseme.rocketleaguelivestats.view.model.mapper.PlayerViewModelMapper;
@@ -32,7 +31,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
@@ -40,7 +38,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -48,7 +45,6 @@ public class MainTableView extends Application implements GameDataListener {
     private static final String FOLDER = FileSystemView.getFileSystemView().getDefaultDirectory().getPath() + File.separator + "my games" + File.separator + "Rocket League" + File.separator + "TAGame" + File.separator + "Logs" + File.separator;
     private static final String LAUNCH = "Launch.log";
 
-    private static final Logger LOG = Logger.getLogger(MainTableView.class);
     public static final String ROW_TABLE_CSS = "row-table.css";
 
     private final GameViewModel gameViewModel;
@@ -126,10 +122,8 @@ public class MainTableView extends Application implements GameDataListener {
     }
 
     private void reloadData(Game game) {
-        LOG.info("Reloading data....");
         if (game != null) {
             if (!gameViewModel.isSameGame(game)) {
-                LOG.info("Something changed, updating");
                 gameViewModel.updateGame(game);
                 gameUpdated();
                 playerViewModels.clear();
@@ -140,7 +134,6 @@ public class MainTableView extends Application implements GameDataListener {
                 addNewPlayers(game);
                 updateItems();
             } else {
-                LOG.info("Same game, won't update");
             }
         }
     }

@@ -1,7 +1,10 @@
 package com.excuseme.rocketleaguelivestats.repository.rocketleague;
 
 
-import com.excuseme.rocketleaguelivestats.model.*;
+import com.excuseme.rocketleaguelivestats.model.GamingSystem;
+import com.excuseme.rocketleaguelivestats.model.Rank;
+import com.excuseme.rocketleaguelivestats.model.Statistics;
+import com.excuseme.rocketleaguelivestats.model.Tier;
 import com.excuseme.rocketleaguelivestats.repository.StatisticsRepository;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -12,6 +15,7 @@ import com.sun.jersey.api.json.JSONConfiguration;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
+import javax.ws.rs.WebApplicationException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -25,26 +29,37 @@ public class APIStatisticsRepository implements StatisticsRepository {
     @Override
     public Statistics find(String playerId, GamingSystem gamingSystem) {
         if(!GamingSystem.BOT.equals(gamingSystem)) {
-            ClientConfig clientConfig = new DefaultClientConfig();
-            clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-            Client client = Client.create(clientConfig);
-            WebResource webResource = client.resource(URL);
-            Payload payLoad = webResource.queryParam("platform",gamingSystem.getApiId().toString())
-                    .queryParam("name", playerId)
-                    .header("X-API-KEY", API_KEY)
-                    .accept("application/json")
-                    .get(Payload.class);
-            if(payLoad != null) {
-                Statistics statistics = new Statistics();
-                Stat stat = findStat(payLoad.stats, "Ranked Duel 1v1");
-                statistics.setOneVsOne(createRank(stat));
-                stat = findStat(payLoad.stats, "Ranked Doubles 2v2");
-                statistics.setTwoVsTwo(createRank(stat));
-                stat = findStat(payLoad.stats, "Ranked Solo Standard 3v3");
-                statistics.setThreeVSThreeSolo(createRank(stat));
-                stat = findStat(payLoad.stats, "Ranked Standard 3v3");
-                statistics.setThreeVsThree(createRank(stat));
-                return statistics;
+            try {
+                ClientConfig clientConfig = new DefaultClientConfig();
+                clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+                Client client = Client.create(clientConfig);
+                WebResource webResource = client.resource(URL);
+                ClientResponse response = webResource.queryParam("platform", gamingSystem.getApiId().toString())
+                        .queryParam("name", playerId)
+                        .header("X-API-KEY", API_KEY)
+                        .accept("application/json")
+                        .get(ClientResponse.class);
+
+                if (response.getStatus() != 200) {
+                    throw new WebApplicationException();
+                }
+                Payload payLoad = response.getEntity(Payload.class);
+
+                if (payLoad != null) {
+                    Statistics statistics = new Statistics();
+                    Stat stat = findStat(payLoad.stats, "Ranked Duel 1v1");
+                    statistics.setOneVsOne(createRank(stat));
+                    stat = findStat(payLoad.stats, "Ranked Doubles 2v2");
+                    statistics.setTwoVsTwo(createRank(stat));
+                    stat = findStat(payLoad.stats, "Ranked Solo Standard 3v3");
+                    statistics.setThreeVSThreeSolo(createRank(stat));
+                    stat = findStat(payLoad.stats, "Ranked Standard 3v3");
+                    statistics.setThreeVsThree(createRank(stat));
+                    return statistics;
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return null;
